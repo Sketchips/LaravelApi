@@ -4,8 +4,6 @@ use App\Http\Controllers\API\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\AddProductController;
-use Illuminate\Support\Facades\Route;
-
 
 
 /*
@@ -18,6 +16,21 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+// Route untuk mengambil semua tiket
+Route::get('/tikets', [TiketController::class, 'index']);
+
+// Route untuk membuat tiket baru
+Route::post('/tikets', [TiketController::class, 'store']);
+
+// Route untuk mendapatkan tiket berdasarkan ID
+Route::get('/tikets/{id}', [TiketController::class, 'show']);
+
+// Route untuk mengupdate tiket
+Route::put('/tikets/{id}', [TiketController::class, 'update']);
+
+// Route untuk menghapus tiket
+Route::delete('/tikets/{id}', [TiketController::class, 'destroy']);
+
 
 // Route untuk logout
 Route::get('/user', function (Request $request) {
