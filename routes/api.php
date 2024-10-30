@@ -4,7 +4,8 @@ use App\Http\Controllers\API\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\AddProductController;
-
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\TiketController;
 
 /*
 |--------------------------------------------------------------------------
