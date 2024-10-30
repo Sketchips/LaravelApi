@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AddProduct;
 use Illuminate\Http\Request;
 
-class AddproductController extends Controller
+class AddProductController extends Controller
 {
     // GET: Mendapatkan semua produk
     public function index()
