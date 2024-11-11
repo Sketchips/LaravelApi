@@ -6,6 +6,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\AddProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TiketController;
+use App\Http\Controllers\OrderController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +62,12 @@ Route::get('/stores/{id}', [StoreController::class, 'show']);
 Route::put('/stores/{id}', [StoreController::class, 'update']);
 Route::delete('/stores/{id}', [StoreController::class, 'destroy']);
 
+
+Route::get('/orders', [OrderController::class, 'index']);
+Route::post('/orders', [OrderController::class, 'store']);
+Route::put('/orders/{id}', [OrderController::class, 'update']);
+Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+Route::get('/orders/{id}', [OrderController::class, 'show']);
 
 
 Route::get('/products', [AddProductController::class, 'index']); // GET semua produk
