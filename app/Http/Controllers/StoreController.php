@@ -31,11 +31,16 @@ class StoreController extends Controller
             $gambar = null;
         }
 
-        return Store::create([
+        $store = Store::create([
             'nama_usaha' => $request->nama_usaha,
             'jenis_usaha' => $request->jenis_usaha,
             'alamat' => $request->alamat,
             'gambar' => $gambar,
+        ]);
+
+        return response()->json([
+            'store' => $store,
+            'image_url' => asset('storage/images/' . $gambar)
         ]);
     }
 
@@ -66,7 +71,10 @@ class StoreController extends Controller
 
         $store->save();
 
-        return $store;
+        return response()->json([
+            'store' => $store,
+            'image_url' => asset('storage/images/' . $store->gambar)
+        ]);
     }
 
     // Delete a store
