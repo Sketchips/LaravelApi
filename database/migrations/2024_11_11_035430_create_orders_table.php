@@ -6,18 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateOrdersTable extends Migration
 {
-    public function up()
-    {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->string('customer')->nullable();
-            $table->timestamp('time')->useCurrent();
-            $table->string('payment_method');
-            $table->decimal('total', 15, 2);
-            $table->timestamps();
-        });
-    }
-
+    // database/migrations/xxxx_xx_xx_create_orders_table.php
+public function up()
+{
+    Schema::create('orders', function (Blueprint $table) {
+        $table->id();
+        $table->string('customer')->nullable();
+        $table->timestamp('time');  // Ubah menjadi timestamp
+        $table->string('payment_method');
+        $table->decimal('total', 12, 2);
+        $table->timestamps();
+    });
+}
     public function down()
     {
         Schema::dropIfExists('orders');
