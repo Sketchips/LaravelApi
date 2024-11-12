@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log; // Tambahkan ini
 
 class OrderController extends Controller
 {
     // Store a new order
     public function store(Request $request)
-    {
+{
+    Log::info('Received order request:', ['data' => $request->all()]);
+    
+    try {
         $data = $request->validate([
             'customer' => 'nullable|string',
             'time' => 'required|date',
@@ -23,10 +27,13 @@ class OrderController extends Controller
             'items.*.total_item_price' => 'required|numeric',
         ]);
 
+        // Format time ke format MySQL datetime
+        $formattedTime = \Carbon\Carbon::parse($data['time'])->format('Y-m-d H:i:s');
+
         // Create the order
         $order = Order::create([
             'customer' => $data['customer'],
-            'time' => $data['time'],
+            'time' => $formattedTime,  // Gunakan waktu yang sudah diformat
             'payment_method' => $data['payment_method'],
             'total' => $data['total'],
         ]);
@@ -43,7 +50,11 @@ class OrderController extends Controller
         }
 
         return response()->json(['message' => 'Order created successfully', 'order' => $order], 201);
+    } catch (\Exception $e) {
+        Log::error('Error creating order:', ['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
     
     public function show($id)
     {
