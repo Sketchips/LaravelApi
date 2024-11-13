@@ -2,166 +2,163 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AddProduct;
+use App\Models\Addproduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Validator;
 
 class AddProductController extends Controller
 {
-    // GET: Mendapatkan semua produk
     public function index()
     {
-        $products = AddProduct::all();
+        $products = Addproduct::all();
+
+        // Map untuk menambahkan URL gambar penuh jika ada
+        $products->each(function ($product) {
+            $product->image = $this->getImageUrl($product->image);
+        });
+
         return response()->json($products);
     }
 
-    // POST: Menambahkan produk baru
     public function store(Request $request)
-{
-    // Validasi input termasuk file gambar
-    $validatedData = $request->validate([
-        'namaProduk' => 'required|string|max:255',
-        'kodeProduk' => 'required|string|max:255',
-        'kategori' => 'required|string',
-        'stok' => 'required|integer',
-        'hargaJual' => 'required|numeric',
-        'keterangan' => 'nullable|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
-    ]);
-
-    // Default nilai $imageName jika gambar tidak diupload
-    $imageName = null;
-
-    // Cek jika ada file gambar
-    if ($request->hasFile('image')) {
-        Log::info('Image file detected in the request.'); // Debugging
-
-        try {
-            // Simpan gambar ke direktori storage
-            $path = $request->file('image')->store('public/images');
-            $imageName = basename($path); // Nama file gambar
-            Log::info('Image uploaded with name: ' . $imageName); // Debugging
-        } catch (\Exception $e) {
-            // Error handling jika terjadi masalah saat menyimpan gambar
-            Log::error('Failed to upload image: ' . $e->getMessage()); // Debugging
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat mengunggah gambar',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    } else {
-        Log::info('No image file found in the request.'); // Debugging
-    }
-
-    // Buat produk baru
-    $product = AddProduct::create([
-        'namaProduk' => $validatedData['namaProduk'],
-        'kodeProduk' => $validatedData['kodeProduk'],
-        'kategori' => $validatedData['kategori'],
-        'stok' => $validatedData['stok'],
-        'hargaJual' => $validatedData['hargaJual'],
-        'keterangan' => $validatedData['keterangan'],
-        'image' => $imageName,
-    ]);
-
-    // Berikan respons berdasarkan ada tidaknya gambar
-    if ($imageName) {
-        // Jika gambar berhasil diupload, beri status 201 Created
-        return response()->json([
-            'message' => 'Produk berhasil ditambahkan dengan gambar',
-            'data' => $product,
-            'product_image_url' => url('storage/images/' . $imageName),
-        ], 201);
-    } else {
-        // Jika tidak ada gambar, beri status 200 OK
-        return response()->json([
-            'message' => 'Produk berhasil ditambahkan tanpa gambar',
-            'data' => $product,
-        ], 200);
-    }
-}
-
-
-    // GET: Mendapatkan satu produk berdasarkan ID
-    public function show($id)
     {
-        $product = AddProduct::find($id);
-
-        if (!$product) {
-            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
-        }
-
-        return response()->json($product);
-    }
-
-    // PUT: Mengupdate produk berdasarkan ID
-    public function update(Request $request, $id)
-    {
-        $product = AddProduct::find($id);
-
-        if (!$product) {
-            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
-        }
-
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'namaProduk' => 'required|string|max:255',
             'kodeProduk' => 'required|string|max:255',
             'kategori' => 'required|string',
             'stok' => 'required|integer',
             'hargaJual' => 'required|numeric',
             'keterangan' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif'
         ]);
 
-        // Jika ada file gambar baru, hapus gambar lama dan simpan yang baru
-        if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
-            if ($product->image) {
-                Storage::delete('public/images/' . $product->image);
-            }
-
-            // Simpan gambar baru
-            $path = $request->file('image')->store('public/images');
-            $imageName = basename($path);
-        } else {
-            $imageName = $product->image; // Jika tidak ada gambar baru, tetap gunakan gambar lama
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Update produk dengan data baru
-        $product->update([
-            'namaProduk' => $validatedData['namaProduk'],
-            'kodeProduk' => $validatedData['kodeProduk'],
-            'kategori' => $validatedData['kategori'],
-            'stok' => $validatedData['stok'],
-            'hargaJual' => $validatedData['hargaJual'],
-            'keterangan' => $validatedData['keterangan'],
-            'image' => $imageName, // Update nama gambar
-        ]);
+        try {
+            $data = $request->all();
 
-        return response()->json([
-            'message' => 'Produk berhasil diupdate',
-            'data' => $product
-        ]);
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $data['image'] = $this->uploadImage($request->file('image'));
+            }
+
+            $product = Addproduct::create($data);
+            $product->image = $this->getImageUrl($product->image);
+
+            return response()->json([
+                'message' => 'Produk berhasil ditambahkan',
+                'data' => $product
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error adding product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    // DELETE: Menghapus produk berdasarkan ID
-    public function destroy($id)
+    public function show($id)
     {
-        $product = AddProduct::find($id);
+        $product = Addproduct::find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Produk tidak ditemukan'], 404);
         }
 
-        // Hapus gambar produk jika ada
-        if ($product->image) {
-            Storage::delete('public/images/' . $product->image);
+        $product->image = $this->getImageUrl($product->image);
+        return response()->json($product);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $product = Addproduct::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
         }
 
-        $product->delete();
+        $validator = Validator::make($request->all(), [
+            'namaProduk' => 'sometimes|required|string|max:255',
+            'kodeProduk' => 'sometimes|required|string|max:255',
+            'kategori' => 'sometimes|required|string',
+            'stok' => 'sometimes|required|integer',
+            'hargaJual' => 'sometimes|required|numeric',
+            'keterangan' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif'
+        ]);
 
-        return response()->json(['message' => 'Produk berhasil dihapus']);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $data = $request->except('image');
+
+            if ($request->hasFile('image')) {
+                $this->deleteImage($product->image);
+                $data['image'] = $this->uploadImage($request->file('image'));
+            }
+
+            $product->update($data);
+            $product->image = $this->getImageUrl($product->image);
+
+            return response()->json([
+                'message' => 'Produk berhasil diupdate',
+                'data' => $product
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $product = Addproduct::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        try {
+            $this->deleteImage($product->image);
+            $product->delete();
+
+            return response()->json(['message' => 'Produk berhasil dihapus'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error deleting product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function uploadImage($file)
+    {
+        // Generate a unique filename with timestamp and original extension
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        // Store the image in the 'products' directory
+        $path = $file->storeAs('products', $filename, 'public');
+        // Extract and return just the filename (not the full path)
+        return $filename;
+    }
+
+    private function getImageUrl($filename)
+    {
+        // Ensure a URL is returned only if a valid filename exists
+        return $filename ? url('storage/products/' . $filename) : null;
+    }
+
+
+    private function deleteImage($path)
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }
