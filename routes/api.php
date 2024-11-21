@@ -19,6 +19,9 @@ use App\Http\Controllers\OrderController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::post('/register', [AuthController::class, 'register']);
+
 // Route untuk mengambil semua tiket
 Route::get('/tikets', [TiketController::class, 'index']);
 
