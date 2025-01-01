@@ -10,16 +10,17 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::create('tikets', function (Blueprint $table) {
-        $table->id();
-        $table->string('namaTiket');
-        $table->integer('stok');
-        $table->decimal('hargaJual', 10, 2);
-        $table->text('keterangan')->nullable();
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('tikets', function (Blueprint $table) {
+            $table->id();
+            $table->string('namaTiket');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('stok');
+            $table->decimal('hargaJual', 10, 2);
+            $table->text('keterangan')->nullable();
+            $table->timestamps();
+        });
+    }
     /**
      * Reverse the migrations.
      */

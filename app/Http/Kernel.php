@@ -7,6 +7,10 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     // ... other code ...
+    protected $middleware = [
+        // ...
+        \App\Http\Middleware\Cors::class,
+    ];
 
     protected $middlewareGroups = [
         'web' => [
