@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
             $table->string('nama_usaha');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('jenis_usaha');
             $table->text('alamat');
             $table->string('gambar')->nullable();  // Untuk gambar toko
             $table->timestamps();
         });
     }
-    
+
     /**
      * Reverse the migrations.
      */

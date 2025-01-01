@@ -20,6 +20,8 @@ use App\Http\Controllers\OrderController;
 |
 */
 
+Route::post('/change-password', [AuthController::class, 'changePassword']);
+
 Route::post('/register', [AuthController::class, 'register']);
 
 // Route untuk mengambil semua tiket
@@ -39,12 +41,12 @@ Route::delete('/tikets/{id}', [TiketController::class, 'destroy']);
 
 
 // Route untuk logout
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-// Route untuk registrasi
-Route::post('/register', [AuthController::class, 'register']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::post('/store', [StoreController::class, 'store']);
+});
 
 // Route untuk login
 Route::post('/login', [AuthController::class, 'login']);

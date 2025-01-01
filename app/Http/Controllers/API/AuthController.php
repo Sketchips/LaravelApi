@@ -6,36 +6,37 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Register a new user and return an access token.
-     */
     public function register(Request $request)
     {
-        // Validasi input dari pengguna
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Buat pengguna baru
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        // Membuat pengguna baru
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // Enkripsi password
         ]);
 
-        // Buat token untuk pengguna baru
+        // Membuat token untuk pengguna baru
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Kembalikan token dalam respons JSON
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'user_id' => $user->id, // Mengembalikan user_id dari pengguna yang baru dibuat
         ], 201); // Kode status 201 untuk sukses pembuatan
     }
 
@@ -44,11 +45,14 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validasi input dari pengguna
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
 
         // Cari pengguna berdasarkan email
         $user = User::where('email', $request->email)->first();
@@ -63,10 +67,10 @@ class AuthController extends Controller
         // Buat token untuk pengguna yang berhasil login
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Kembalikan token dalam respons JSON
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'user_id' => $user->id,
         ]);
     }
 
@@ -93,6 +97,32 @@ class AuthController extends Controller
         return response()->json($users);
     }
 
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6',
+            'user_id' => 'required'
+        ]);
+
+        $user = User::find($request->user_id);
+
+        if (!$user || !Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password lama tidak sesuai'
+            ], 401);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password berhasil diubah'
+        ]);
+    }
     /**
      * Get user data by ID.
      */

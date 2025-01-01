@@ -9,19 +9,24 @@ class Tiket extends Model
 {
     use HasFactory;
 
-    // Nama tabel yang digunakan dalam database
-    protected $table = 'tikets';
-
-    // Kolom yang dapat diisi massal
     protected $fillable = [
         'namaTiket',
         'stok',
         'hargaJual',
         'keterangan',
+        'user_id', // Foreign key untuk relasi ke User
+        'store_id', // Foreign key untuk relasi ke Store
     ];
 
-    // Jika menggunakan timestamps, aktifkan ini
-    // public $timestamps = true;
+    // Relasi ke User (Many-to-One)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    // Anda dapat menambahkan relasi, accessor, atau mutator di sini jika diperlukan
+    // Relasi ke Store (Many-to-One)
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 }
