@@ -18,7 +18,7 @@ class UserTypeOverview extends BaseWidget
         $today = Carbon::today();
 
         return [
-            Stat::make('Total Penjualan', 'Rp ' . number_format(
+            Stat::make('Total Penjualan Hari Ini', 'Rp ' . number_format(
                 Order::whereDate('created_at', $today)->sum('total'),
                 0,
                 ',',
@@ -30,7 +30,7 @@ class UserTypeOverview extends BaseWidget
                 ->chart([7, 4, 6, 8, 5, 2, 3]),
 
             Stat::make(
-                'Jumlah Transaksi',
+                'Jumlah Transaksi Hari Ini',
                 Order::whereDate('created_at', $today)->count()
             )
                 ->description('Transaksi berhasil')

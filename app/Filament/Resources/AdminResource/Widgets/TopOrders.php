@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TopOrders extends BaseWidget
 {
+    protected static ?string $heading = 'Ranking Penjualan';
     protected function getTableQuery(): Builder
     {
         return Store::query()
