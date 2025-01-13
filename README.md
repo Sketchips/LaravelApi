@@ -7,6 +7,42 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# BackendLaravel
+Ini adalah mesin untuk aplikasi tiketing
+
+## Tutorial Instalasi
+1. Clone Repo:
+   ```bash
+   git clone https://github.com/Sketchips/BackEnd
+   ```
+2. Masuk folder proyek:
+   ```bash
+   cd BackEnd
+   ```
+3. Install dependencies:
+   ```bash
+   composer install
+   ```
+4. Jalankan migrasi:
+   ```bash
+   php artisan migrate
+   ```
+5. Install app key:
+   ```bash
+   php artisan key:generate
+   ```
+6. Jalankan storage:link:
+   ```bash
+   php artisan storage:link
+   ```
+7. Jalankan laravel:
+   ```bash
+   php artisan serve
+   ```
+
+Selesai
+
+   
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
